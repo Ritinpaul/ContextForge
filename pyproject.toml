@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contextforge"
+version = "0.1.0"
+description = "ContextForge: ingestion + indexing foundation for RAG"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "qdrant-client>=1.9.0",
+  "sentence-transformers>=3.0.1",
+  "numpy>=1.26",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "tiktoken>=0.7.0",
+  "python-docx>=1.1.2",
+  "pymupdf>=1.24.0",
+  "beautifulsoup4>=4.12.3",
+  "lxml>=5.2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2.0",
+  "ruff>=0.5.0",
+]
+
+[project.scripts]
+contextforge = "contextforge.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
