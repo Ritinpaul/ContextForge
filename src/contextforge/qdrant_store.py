@@ -80,3 +80,33 @@ class QdrantStore:
                 }
             )
         return out
+
+    def iter_points(
+        self,
+        *,
+        limit: int = 256,
+        with_payload: bool = True,
+    ):
+        """Yield all points in the collection using scroll.
+
+        This is used by Phase 2 sparse retrieval (BM25).
+        """
+
+        offset = None
+        while True:
+            points, offset = self.client.scroll(
+                collection_name=self.collection,
+                limit=limit,
+                with_payload=with_payload,
+                with_vectors=False,
+                offset=offset,
+            )
+
+            for p in points:
+                yield {
+                    "id": str(p.id),
+                    "payload": dict(p.payload or {}),
+                }
+
+            if offset is None:
+                break

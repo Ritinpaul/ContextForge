@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .ask import ask as ask_question
 from .config import Settings
 from .eval import evaluate
 from .ingest import ingest_path
@@ -43,6 +44,25 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_ask(args: argparse.Namespace) -> int:
+    settings = Settings()
+    res = ask_question(args.question, settings=settings, debug=bool(args.debug))
+
+    print(res.answer)
+
+    if res.sources:
+        print("\nSources:")
+        for s in res.sources:
+            print(f"- {s}")
+
+    if args.debug:
+        print("\nDebug:")
+        print(f"- faithfulness={res.faithfulness}")
+        print(f"- retries={res.retries}")
+
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="contextforge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -67,6 +87,18 @@ def build_parser() -> argparse.ArgumentParser:
     eval_p = sub.add_parser("eval", help="Evaluate retrieval on golden dataset")
     eval_p.add_argument("--golden", required=True, help="Path to golden JSONL")
     eval_p.set_defaults(func=_cmd_eval)
+
+    ask_p = sub.add_parser(
+        "ask",
+        help="Answer a question using hybrid retrieval + reranking + faithfulness retry (Phase 2)",
+    )
+    ask_p.add_argument("question", help="Question to answer")
+    ask_p.add_argument(
+        "--debug",
+        action="store_true",
+        help="Print extra debug info (faithfulness score, retries)",
+    )
+    ask_p.set_defaults(func=_cmd_ask)
 
     return p
 
